@@ -1,0 +1,4 @@
+*.dta
+*.sas
+*.xls
+.RData

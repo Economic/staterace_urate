@@ -22,7 +22,6 @@ library(zoo)
 
 #######################
 
-
 bls_key <- Sys.getenv("BLS_REG_KEY")
 
 series_ids <- fread("input/seriesid.csv")
