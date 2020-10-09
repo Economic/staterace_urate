@@ -55,6 +55,3 @@ qtrly <- stSeries %>%
   summarize(qtr_urate = mean(urate)) %>% 
   pivot_wider(id_cols = state, names_from=qtr, values_from=qtr_urate)
 
-
-#cps2020 <-load_cps(years = 2020, sample = "basic", months=1:6) %>% 
-# filter(age >= 16)
