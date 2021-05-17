@@ -1,5 +1,6 @@
 *.dta
 *.sas
 *.xls
+*.xlsx
 .RData
 .Rproj.user
