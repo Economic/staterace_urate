@@ -90,7 +90,7 @@ current_qtr_laus <- laus %>%
   
 ```
 
-
+Load CPS data using extractr, and estimate 6-month state averages
 ```{r}
 
 # 2  load CPS data (modify later to make interactive)
@@ -120,6 +120,8 @@ overall <- cps %>%
          genderXrace = paste(female, '-', wbhao),
          overall = 'All')
 ```
+
+Merge / analyze CPS and LAUS data for current/reference quarters
 
 ```{r}
 #### Merge CPS unemp rate by state, gender, race/ethnicity with BLS LAUS ####
