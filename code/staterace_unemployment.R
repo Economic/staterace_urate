@@ -52,24 +52,31 @@ stSeries <- get_bls_data(statedata) %>%
   mutate(month = as.numeric(substr(period,2,3))) %>% #create standard date variable
   mutate(date = as.Date(paste(year, month, 1, sep = "-"), "%Y-%m-%d")) %>% 
   mutate(qtr=as.yearqtr(date))  #create quarter variable
+
+# Table of monthly urate by state
+monthly <- stSeries %>% 
+  select(state, date, urate) %>% 
+  pivot_wider(id_cols = state, names_from=date, values_from=urate) %>% 
+  write_csv(path = "data/LAUS_monthly.csv")
  
 # Table of average quarterly unemployment by state
 qtrly <- stSeries %>% 
   select(state, qtr, urate) %>% 
   group_by(state, qtr) %>% 
   summarize(qtr_urate = mean(urate)) %>% 
-  pivot_wider(id_cols = state, names_from=qtr, values_from=qtr_urate)
+  pivot_wider(id_cols = state, names_from=qtr, values_from=qtr_urate) %>% 
+  write_csv(path = "data/LAUS_qtrly_avg.csv")
 
 
 # 2  load 2 quarters of CPS data (modify later to make interactive)
-cps <-load_cps(years = 2020,months = 3:9, sample="basic") %>% 
-  filter(age>=16) %>% 
-  select(female, wbhao, statefips, unemp, month, cmpwgt)
+#cps <-load_cps(years = 2020,months = 6:12, sample="basic") %>% 
+#  filter(age>=16) %>% 
+#  select(female, wbhao, statefips, unemp, month, cmpwgt)
 
 #calculate unemployment rate by state, sex, race/ethnicity
-race_urate<-cps %>% 
-  group_by(statefips, female, wbhao) %>% 
-  summarize(urtP = weighted.mean(unemp,cmpwgt/3),
-            n_urt = n())
+#race_urate<-cps %>% 
+#  group_by(statefips, female, wbhao) %>% 
+#  summarize(urtP = weighted.mean(unemp,cmpwgt/3),
+#            n_urt = n())
   
  #will need to filter obs <= 700

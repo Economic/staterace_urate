@@ -2,3 +2,4 @@
 *.sas
 *.xls
 .RData
+.Rproj.user
