@@ -1,0 +1,207 @@
+---
+title: "alt_st_qtr_unemp"
+author: "Daniel Perez"
+date: "1/24/2022"
+output: html_document
+---
+
+```{r, Libraries}
+library(tidyverse)
+library(epiextractr)
+library(epidatatools)
+library(blsAPI)
+library(here)
+library(data.table)
+library(zoo)
+library(labelled)
+library(readxl)
+library(openxlsx)
+library(lubridate)
+```
+
+BLS API function to load LAUS data
+
+```{r BLS API function}
+
+bls_key <- Sys.getenv("BLS_REG_KEY")
+series_ids <- fread(here('input/seriesid.csv'))
+statedata <- series_ids$series_id
+
+# This is where our state unemployment data lives
+rawsource <- "https://download.bls.gov/pub/time.series/la/"
+
+#function to retrieve data from BLS
+#max number of years is 20 per query, max seriesids is 50 per query, max queries per day is 500 for registered users.
+get_bls_data <- function(codes) {
+  
+  payload1 <- list('seriesid' = codes[1:50], 'startyear' = '2006', 'endyear' = '2021', 'registrationkey' = bls_key)
+  payload2 <- list('seriesid' = codes[51:52], 'startyear' = '2006', 'endyear' = '2021', 'registrationkey' = bls_key)
+
+  df1 <- blsAPI(payload1, api_version = 2, return_data_frame = TRUE)
+  df2 <- blsAPI(payload2, api_version = 2, return_data_frame = TRUE)
+  
+  rbind(df1, df2)
+}
+
+```
+
+Load CPS data using extractr, and estimate 6-month state averages
+```{r Load CPS}
+
+# 2  load CPS data (modify later to make interactive)
+cps <-load_basic(2016:2021, age, female, wbhao, statefips, unemp, month, basicwgt, lfstat, age, year) %>% 
+  mutate(date = as.Date(paste(year, month, 1, sep = "-"), "%Y-%m-%d")) %>% 
+  mutate(qtr=as.yearqtr(date),
+         qtr2 = roll) %>%  #create quarter variable
+  filter(age>=16, lfstat!=3) %>% 
+  mutate(across(wbhao|female, ~ as.character(haven::as_factor(.x))))
+```
+
+
+```{r alt qtrly cps urates}
+
+all <- cps %>% 
+  mutate(statefips='US') %>% 
+  group_by(qtr, statefips) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>%
+  ungroup()# %>% 
+  mutate(roll_urate = rollmean(urate, k=2, fill=NA, align = "right"),
+         roll_n = rollmean(n, k=2, fill=NA, align='right'))# %>% 
+  pivot_wider(id_cols=statefips, values_from=c(rolling_avg), names_from=c(qtr)) %>% 
+  rename(abbr = statefips)
+
+race <- cps %>% 
+  group_by(qtr, wbhao) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=wbhao, values_from=urate, names_from=qtr)
+
+gender <- cps %>% 
+  group_by(qtr, female) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=female, values_from=urate, names_from=qtr) %>% 
+   rename(gender = female)
+
+state <- cps %>% 
+  group_by(qtr, statefips) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=statefips, values_from=urate, names_from=qtr) %>% 
+  rename(abbr = statefips)
+
+staterace <- cps %>% 
+  mutate(stateXrace = paste(statefips,'-', wbhao)) %>% 
+  group_by(qtr, stateXrace) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=stateXrace, values_from=urate, names_from = qtr) %>% 
+  rename(group = stateXrace) %>% 
+  separate(group, c('abbr','wbhao')) #creates abbr, wbho, gender variables
+  
+stategender <- cps %>% 
+  mutate(stateXgender = paste(statefips,'-', female)) %>% 
+  group_by(qtr, stateXgender) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=stateXgender, values_from=urate, names_from = qtr) %>%
+  rename(group = stateXgender) %>% 
+  separate(group, c('abbr','gender')) #creates abbr, wbho, gender variables
+
+
+gender_race <- cps %>% 
+  mutate(genderXrace = paste(female,'-', wbhao)) %>% 
+  group_by(qtr, genderXrace) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=genderXrace, values_from=urate, names_from = qtr) %>% 
+  rename(group = genderXrace) %>% 
+  separate(group, c('gender','wbhao')) #creates abbr, wbho, gender variables
+
+
+all_subgroups <- cps %>% 
+  mutate(subgroups = paste(statefips,'-', female,'-', wbhao)) %>% 
+  group_by(qtr, subgroups) %>% 
+  summarize(cps_urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  rename(group = subgroups) %>%
+  separate(group, c('abbr','gender','wbhao')) #creates abbr, wbho, gender variables
+
+pivoted_subgroups <-all_subgroups %>% 
+  pivot_wider(id_cols=subgroups, values_from=urate, names_from = qtr) %>% 
+
+alt_qtrly <- bind_rows(all, state, gender, race, staterace, stategender, gender_race, all_subgroups) %>% 
+  relocate(gender, wbhao, .after=abbr) %>% 
+  mutate(wbhao = replace(wbhao,is.na(wbhao), 'All'),
+         gender = replace(gender, is.na(gender), 'All'),
+         abbr = replace(abbr, is.na(abbr), 'US'))
+
+```
+
+```{r alt qtr samp_sizes}
+race_n <- cps %>% 
+  group_by(qtr, wbhao) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=wbhao, values_from=n, names_from=qtr) %>% 
+  rename(group = wbhao)
+
+gender_n <- cps %>% 
+  group_by(qtr, female) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=female, values_from=n, names_from=qtr) %>% 
+   rename(group = female)
+
+state_n <- cps %>% 
+  group_by(qtr, statefips) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=statefips, values_from=n, names_from=qtr) %>% 
+  rename(group = statefips)
+
+all_n <- cps %>% 
+  mutate(statefips='US') %>% 
+  group_by(qtr, statefips) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=statefips, values_from=n, names_from=qtr) %>% 
+  rename(group = statefips)
+
+staterace_n <- cps %>% 
+  mutate(stateXrace = paste(statefips,'-', wbhao)) %>% 
+  group_by(qtr, stateXrace) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=stateXrace, values_from=n, names_from = qtr) %>% 
+  rename(group = stateXrace)
+
+stategender_n <- cps %>% 
+  mutate(stateXgender = paste(statefips,'-', female)) %>% 
+  group_by(qtr, stateXgender) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=stateXgender, values_from=n, names_from = qtr) %>%
+  rename(group = stateXgender)
+
+gender_race_n <- cps %>% 
+  mutate(genderXrace = paste(female,'-', wbhao)) %>% 
+  group_by(qtr, genderXrace) %>% 
+  summarize(urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=genderXrace, values_from=n, names_from = qtr) %>% 
+  rename(group = genderXrace)
+
+all_subgroups_n <- cps %>% 
+  mutate(subgroups = paste(statefips,'-', female,'-', wbhao)) %>% 
+  group_by(qtr, subgroups) %>% 
+  summarize(cps_urate = weighted.mean(unemp, w=basicwgt/3, na.rm=TRUE),
+            n=n()) %>% 
+  pivot_wider(id_cols=subgroups, values_from=n, names_from = qtr) %>% 
+  rename(group = subgroups)
+
+
+historical_n <- bind_rows(all_n, state_n, gender_n, race_n, staterace_n, stategender_n, gender_race_n, all_subgroups_n)   
+
+```
