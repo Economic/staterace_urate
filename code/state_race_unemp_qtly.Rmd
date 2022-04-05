@@ -17,17 +17,6 @@ library(zoo)
 library(lubridate)
 ```
 
-Select 6-month samples for current and reference quarters
-```{r Select quarters}
-#pre-COVID reference periods
-ref_qtr1 = '2019 Q4'
-ref_qtr2 = '2020 Q1'
-
-#Comparison periods
-prev_qtr= '2020 Q1'
-cur_qtr = '2020 Q2'
-```
-
 
 ```{r BLS API function}
 
@@ -43,8 +32,8 @@ rawsource <- "https://download.bls.gov/pub/time.series/la/"
 #max number of years is 20 per query, max seriesids is 50 per query, max queries per day is 500 for registered users.
 get_bls_data <- function(codes) {
   
-  payload1 <- list('seriesid' = codes[1:50], 'startyear' = '2006', 'endyear' = '2021', 'registrationkey' = bls_key)
-  payload2 <- list('seriesid' = codes[51:52], 'startyear' = '2006', 'endyear' = '2021', 'registrationkey' = bls_key)
+  payload1 <- list('seriesid' = codes[1:50], 'startyear' = '2006', 'endyear' = '2022', 'registrationkey' = bls_key)
+  payload2 <- list('seriesid' = codes[51:52], 'startyear' = '2006', 'endyear' = '2022', 'registrationkey' = bls_key)
 
   df1 <- blsAPI(payload1, api_version = 2, return_data_frame = TRUE)
   df2 <- blsAPI(payload2, api_version = 2, return_data_frame = TRUE)
@@ -53,6 +42,7 @@ get_bls_data <- function(codes) {
 }
 
 ```
+
 
 Load LAUS data, and state labels here
 
@@ -75,25 +65,12 @@ laus <- get_bls_data(statedata) %>%
   #merge state labels (optional)
   left_join(state_labels)
 
-#Estimate quarterly LAUS unemployment rate for reference period (2020 Q1)
-reference_qtr_laus <- laus %>% 
-filter(qtr==ref_qtr2) %>% 
-  group_by(st_abbr) %>%
-  summarize(laus_qtr_unemp = mean(urate))
-
-#Estimate quarterly LAUS unemployment rate for current period
-current_qtr_laus <- laus %>% 
-  filter(qtr==cur_qtr) %>% 
-  group_by(st_abbr) %>%
-  summarize(laus_qtr_unemp = mean(urate)) 
-
 ```
 
 
 ```{r Load CPS via EPI extractr}
-
 #Use EPI extractr to load CPS Basic. See more at https://github.com/Economic/epiextractr
-cps <-load_basic(2016:2022, year, month, basicwgt, age, female, wbhao, statefips, unemp, lfstat) %>% 
+cps <-load_basic(2016:year(Sys.time()), year, month, basicwgt, age, female, wbhao, statefips, unemp, lfstat) %>% 
   filter(age>=16, lfstat!=3) %>% 
   mutate(date = as.Date(paste(year, month, 1, sep = "-"), "%Y-%m-%d")) %>% 
   #create quarterly date periods
@@ -103,128 +80,109 @@ cps <-load_basic(2016:2022, year, month, basicwgt, age, female, wbhao, statefips
   mutate(across(wbhao|female, ~ as.character(haven::as_factor(.x))))
 ```
 
-```{r CPS state urate estimates}
-# Estimate state unemp rates using 2 quarters of data
-state_urates_reference <- cps %>% 
-  filter(qtr==ref_qtr1 | qtr == ref_qtr2) %>% 
-  group_by(st_abbr) %>% 
-  summarize(st_urate_6mos = weighted.mean(unemp, w=basicwgt/6, na.rm=TRUE))
+```{r Quarterly analysis function}
 
-## Current quarter + previous qtr ##
-state_urates_current <- cps %>% 
-  filter(qtr==prev_qtr | qtr==cur_qtr) %>% 
-  group_by(st_abbr) %>% 
-  summarize(st_urate_6mos = weighted.mean(unemp, w=basicwgt/6, na.rm=TRUE))
-```
+#empty lists to store dfs
+output_dfs <- list()
 
+qtly_analysis <- function(quarters){
 
-```{r CPS ntl estimates by race/ethnicity gender}
-#CPS estimate of US unemp
-us_subgroup_urates_current <- cps %>% 
-  filter(qtr==prev_qtr | qtr==cur_qtr) %>% 
-  mutate(overall= paste('US','-','All','-','All'),
-         gender = paste('US','-','All','-',female),
-         race = paste('US','-',wbhao,'-','All'),
-         genderXrace = paste('US','-',wbhao,'-',female)) %>% 
-  summarize_groups(overall|race|gender|genderXrace,
-                   subgroup_urate = weighted.mean(unemp, w=basicwgt/6, na.rm=TRUE),
-                   n=n()) %>% 
-  separate(group_value, c('st_abbr','wbhao','gender')) %>% #creates st_abbr, wbho, gender variables
-  mutate(st_urate_6mos = subgroup_urate[1],
-         st_abbr = 'US',
-         ratio = subgroup_urate/st_urate_6mos)
-
-us_subgroup_urates_reference <- cps %>% 
-  filter(qtr=='2019 Q4'| qtr=='2020 Q1') %>% 
-  mutate(overall= paste('US','-','All','-','All'),
-         gender = paste('US','-','All','-',female),
-         race = paste('US','-',wbhao,'-','All'),
-         genderXrace = paste('US','-',wbhao,'-',female)) %>% 
-  summarize_groups(overall|race|gender|genderXrace,
-                   subgroup_urate = weighted.mean(unemp, w=basicwgt/6, na.rm=TRUE),
-                   n=n()) %>% 
-  separate(group_value, c('st_abbr','wbhao','gender')) %>% 
-  mutate(st_urate_6mos = subgroup_urate[1],
-         st_abbr = 'US',
-         ratio = subgroup_urate/st_urate_6mos)
+  for(i in 1:length(qtr_list)){ 
   
+  quarterly_laus <- laus %>% 
+  filter(qtr==qtr_list[i+1]) %>% 
+  group_by(st_abbr) %>%
+  summarize(laus_qtr_unemp = mean(urate))  
+      
+  state_urates <- cps %>% 
+  filter(qtr==qtr_list[i] | qtr == qtr_list[i+1]) %>% 
+  group_by(st_abbr) %>% 
+  summarize(st_urate_6mos = weighted.mean(unemp, w=basicwgt/6, na.rm=TRUE))
+    
+  us_subgroup_urates <- cps %>% 
+  filter(qtr==qtr_list[i] | qtr==qtr_list[i+1]) %>% 
+  mutate(overall= paste('US','-','All','-','All'),
+         gender = paste('US','-','All','-',female),
+         race = paste('US','-',wbhao,'-','All'),
+         genderXrace = paste('US','-',wbhao,'-',female)) %>% 
+  summarize_groups(overall|race|gender|genderXrace,
+                   subgroup_urate = weighted.mean(unemp, w=basicwgt/6, na.rm=TRUE),
+                   n=n()) %>% 
+  separate(group_value, c('st_abbr','wbhao','gender')) %>% #creates st_abbr, wbho, gender variables
+  mutate(st_urate_6mos = subgroup_urate[1],
+         st_abbr = 'US',
+         ratio = subgroup_urate/st_urate_6mos)
+
+  all_subgroup_urates<- cps %>% 
+    #restrict data to current quarters
+    filter(qtr==qtr_list[i] | qtr==qtr_list[i+1]) %>% 
+    #create subgroup variables
+    mutate(stateXrace = paste(st_abbr,'-', wbhao,'-','All'),
+           stateXgender = paste(st_abbr,'-','All','-',female),
+           stXraceXgender = paste(st_abbr,'-',wbhao,'-',female)) %>% 
+    #Estimate unemployment rates and sample sizes by subgroups
+    summarize_groups(st_abbr|stateXrace|stXraceXgender|stateXgender,
+                     subgroup_urate = weighted.mean(unemp, w=basicwgt/6, na.rm=TRUE),
+                     n=n()) %>% 
+    #split group_value variable to create st_abbr, wbho, gender labels
+    separate(group_value, c('st_abbr','wbhao','gender')) %>% 
+    #merge statefips labels by st_abbr to get fips codes and CPS estimated urates
+    left_join(state_urates) %>% 
+    #get ratio of (6-month state avg:subgroup) unemployment rate
+    mutate(ratio = subgroup_urate/st_urate_6mos) %>% 
+    arrange(st_abbr, desc(n)) %>% 
+    #bind US unemployment rates
+    bind_rows(us_subgroup_urates) %>% 
+    #merge quarterly laus unemp estimates
+    left_join(quarterly_laus) %>% 
+    mutate(qtr_st_urate_by_reg = ratio * laus_qtr_unemp,
+           se = (sqrt(subgroup_urate*(1-subgroup_urate)/n)),
+           cv = se / subgroup_urate) %>% 
+    # replace all values with a coefficient of variation below threshold to NA
+    mutate(thresh.10 = replace(qtr_st_urate_by_reg, cv>.10, NA),
+           thresh.15 = replace(qtr_st_urate_by_reg, cv>.15, NA),
+           thresh.20 = replace(qtr_st_urate_by_reg, cv>.20, NA),
+           thresh.25 = replace(qtr_st_urate_by_reg, cv>.25, NA)) %>%  
+    left_join(state_labels) %>% 
+    select(state, st_abbr, gender, wbhao, n, subgroup_urate,
+           st_urate_6mos, ratio, laus_qtr_unemp, qtr_st_urate_by_reg,
+           se, cv, thresh.10:thresh.25) %>% # Clean our data up
+      mutate(wbhao = replace_na(wbhao, 'All'),
+             gender = replace_na(gender, 'All'),
+             grp_qtrs = paste(qtr_list[1],'+',qtr_list[i+1]),
+             qtr = paste(qtr_list[i+1])) %>% 
+    filter(wbhao!='Other')
+  
+    output_dfs[[i]] <- all_subgroup_urates # save your dataframes into the list
+
+  }
+  return(output_dfs)
+}
+
+```
+
+```{r Desired quarters}
+
+qtr_list <- c('2019 Q4','2020 Q1', '2020 Q2', '2020 Q3', '2020 Q4', '2021 Q1', '2021 Q2',
+              '2021 Q3', '2021 Q4')
+
+my_dfs <- qtly_analysis(qtr_list)
+
+all_qtrs <- bind_rows(my_dfs)
+
 ```
 
 
-Coefficient of variation cutoffs: 0.10, 0.15, 0.20 0.25
+```{r Qtr analysis}
 
-```{r Merge CPS + LAUS data}
+ref_qtr <- all_qtrs %>% 
+  filter(qtr=='2020 Q1')
 
-#### Merge CPS and BLS LAUS estimates ####
-
-current_quarter_output <- cps %>% 
-  #restrict data to current quarters
-  filter(qtr==prev_qtr | qtr== cur_qtr) %>% 
-  #create subgroup variables
-  mutate(stateXrace = paste(st_abbr,'-', wbhao,'-','All'),
-         stateXgender = paste(st_abbr,'-','All','-',female),
-         stXraceXgender = paste(st_abbr,'-',wbhao,'-',female)) %>% 
-  #Estimate unemployment rates and sample sizes by subgroups
-  summarize_groups(st_abbr|stateXrace|stXraceXgender|stateXgender,
-                   subgroup_urate = weighted.mean(unemp, w=basicwgt/6, na.rm=TRUE),
-                   n=n()) %>% 
-  #split group_value variable to create st_abbr, wbho, gender labels
-  separate(group_value, c('st_abbr','wbhao','gender')) %>% 
-  #merge statefips labels by st_abbr to get fips codes and CPS estimated urates
-  left_join(state_urates_current) %>% 
-  #get ratio of (6-month state avg:subgroup) unemployment rate
-  mutate(ratio = subgroup_urate/st_urate_6mos) %>% 
-  arrange(st_abbr, desc(n)) %>% 
-  #bind US unemployment rates
-  bind_rows(us_subgroup_urates_current) %>% 
-  #merge quarterly laus unemp estimates
-  left_join(current_qtr_laus) %>% 
-  mutate(qtr_st_urate_by_reg = ratio * laus_qtr_unemp,
-         se = (sqrt(subgroup_urate*(1-subgroup_urate)/n)),
-         cv = se / subgroup_urate) %>% 
-  # replace all values with <700 obs with NA
-  mutate(thresh.10 = replace(qtr_st_urate_by_reg, cv>.10, NA),
-         thresh.15 = replace(qtr_st_urate_by_reg, cv>.15, NA),
-         thresh.20 = replace(qtr_st_urate_by_reg, cv>.20, NA),
-         thresh.25 = replace(qtr_st_urate_by_reg, cv>.25, NA)) %>%  
-  left_join(state_labels) %>% 
-  select(state, st_abbr, gender, wbhao, n, subgroup_urate,
-         st_urate_6mos, ratio, laus_qtr_unemp, qtr_st_urate_by_reg, se, cv, thresh.10:thresh.25) %>% # Clean our data up
-    mutate(wbhao = replace_na(wbhao, 'All'),
-           gender = replace_na(gender, 'All')) %>% 
-  filter(wbhao!='Other')
-
-
-reference_quarter_output <- cps %>% 
-  filter(qtr==ref_qtr1 | qtr== ref_qtr2) %>% 
-  mutate(stateXrace = paste(st_abbr,'-', wbhao,'-','All'),
-         stateXgender = paste(st_abbr,'-','All','-',female),
-         stXraceXgender = paste(st_abbr,'-',wbhao,'-',female)) %>% 
-  summarize_groups(st_abbr|stateXrace|stXraceXgender|stateXgender,
-                   subgroup_urate = weighted.mean(unemp, w=basicwgt/6, na.rm=TRUE),
-                   n=n(),
-                   sd = sd(unemp)) %>% 
-  separate(group_value, c('st_abbr','wbhao','gender')) %>% #creates st_abbr, wbho, gender variables
-  left_join(state_urates_reference) %>% #merge statefips labels by st_abbr to get fips codes and CPS estimated urates
-  mutate(ratio = subgroup_urate/st_urate_6mos) %>% #get ratio of (6-month state avg:subgroup) unemployment rate
-  arrange(st_abbr, desc(n)) %>% 
-  #bind US overall results
-  bind_rows(us_subgroup_urates_reference) %>% 
-  left_join(reference_qtr_laus) %>% #merge quarterly laus unemp estimates
-  mutate(qtr_st_urate_by_reg = ratio * laus_qtr_unemp,
-         se = (sqrt(subgroup_urate*(1-subgroup_urate)/n)),
-         cv = se / subgroup_urate) %>% 
-  # Supress urates where observations fall below 700,500,300,100 obs threshold
-   mutate(thresh.10 = replace(qtr_st_urate_by_reg, cv>.10, NA),
-         thresh.15 = replace(qtr_st_urate_by_reg, cv>.15, NA),
-         thresh.20 = replace(qtr_st_urate_by_reg, cv>.20, NA),
-         thresh.25 = replace(qtr_st_urate_by_reg, cv>.25, NA)) %>%  
-  left_join(state_labels) %>% 
-  select(state, st_abbr, gender, wbhao, n, subgroup_urate,
-         st_urate_6mos, ratio, laus_qtr_unemp, qtr_st_urate_by_reg, se, cv, thresh.10:thresh.25) %>% # Clean our data up
-  mutate(wbhao = replace_na(wbhao, 'All'),
-           gender = replace_na(gender, 'All')) %>% 
-  filter(wbhao!='Other')
+state_urates <- all_qtrs %>% 
+  filter(gender == 'All', wbhao!='All') %>% 
+  select(qtr, state, wbhao, qtr_st_urate_by_reg) %>% 
+  pivot_wider(id_cols = c(qtr,wbhao), names_from = c(state), values_from = qtr_st_urate_by_reg) %>% 
+  write_csv(here(paste0('data/state_urates_',format(Sys.time(), "%d-%b-%Y %H.%M"),'.csv')))
 
 ```
 
@@ -261,7 +219,6 @@ change_since_previous_period <- current_urates %>%
   select(state,contains('d_'))
 
 ```
-
 
 Supplemental data
 
@@ -307,7 +264,7 @@ EARN_staterace_umemp <- createWorkbook()
 
 
 addWorksheet(EARN_staterace_umemp, sheetName = paste0(cur_qtr, ' raw'))
-# addWorksheet(EARN_staterace_umemp, sheetName = paste0(ref_qtr2, ' raw'))
+addWorksheet(EARN_staterace_umemp, sheetName = paste0(ref_qtr2, ' raw'))
 addWorksheet(EARN_staterace_umemp, sheetName = paste0(cur_qtr, ' Urates'))
 # addWorksheet(EARN_staterace_umemp, sheetName = paste0(ref_qtr2, ' Urates'))
 # addWorksheet(EARN_staterace_umemp, sheetName = paste0(cur_qtr, ' BW HW ratios'))
@@ -321,8 +278,8 @@ addWorksheet(EARN_staterace_umemp, sheetName = paste0(cur_qtr, ' Urates'))
 
 writeData(EARN_staterace_umemp, headerStyle = hs1, current_quarter_output, sheet = paste0(cur_qtr, ' raw'),
           startCol = 1, startRow = 1, colNames = TRUE, keepNA = TRUE)
-# writeData(EARN_staterace_umemp, headerStyle = hs1, reference_quarter_output, sheet = paste0(ref_qtr2, ' raw'),
-#           startCol = 1, startRow = 1, colNames = TRUE, keepNA = TRUE)
+writeData(EARN_staterace_umemp, headerStyle = hs1, reference_quarter_output, sheet = paste0(ref_qtr2, ' raw'),
+           startCol = 1, startRow = 1, colNames = TRUE, keepNA = TRUE)
 writeData(EARN_staterace_umemp, headerStyle = hs1, current_urates, sheet = paste0(cur_qtr, ' Urates'),
           startCol = 1, startRow = 1, colNames = TRUE, keepNA = TRUE)
 # writeData(EARN_staterace_umemp, headerStyle = hs1, reference_urates, sheet = paste0(ref_qtr2, ' Urates'),
@@ -343,7 +300,7 @@ writeData(EARN_staterace_umemp, headerStyle = hs1, current_urates, sheet = paste
 #           startCol = 1, startRow = 1, colNames = TRUE, keepNA = TRUE)
 # 
 # #add ppt format
-# addStyle(EARN_staterace_umemp, paste0(cur_qtr, ' BW HW ratios'), style=ppt, cols=c(2:3), rows=2:(nrow(current_qtr_ratios_table)+1), gridExpand=TRUE)
+#addStyle(EARN_staterace_umemp, paste0(cur_qtr, ' BW HW ratios'), style=ppt, cols=c(2:3), rows=2:(nrow(current_qtr_ratios_table)+1), gridExpand=TRUE)
 # addStyle(EARN_staterace_umemp, paste0(ref_qtr2,' BW HW ratios'), style=ppt, cols=c(2:3), rows=2:(nrow(reference_qtr_ratios_table)+1), gridExpand=TRUE)
 # addStyle(EARN_staterace_umemp, paste0(cur_qtr,' vs ', ref_qtr2), style=ppt, cols=c(2:6), rows=2:(nrow(change_since_previous_period)+1), gridExpand=TRUE)
 
@@ -357,7 +314,7 @@ addStyle(EARN_staterace_umemp, paste0(cur_qtr, ' Urates'), style=pct, cols=c(2:6
 
 #set column widths
 setColWidths(EARN_staterace_umemp, paste0(cur_qtr, ' Urates'), cols = 2:ncol(current_urates), widths = "auto")
-# setColWidths(EARN_staterace_umemp, paste0(ref_qtr2, ' Urates'), cols = 2:ncol(reference_urates), widths = "auto")
+#setColWidths(EARN_staterace_umemp, paste0(ref_qtr2, ' Urates'), cols = 2:ncol(reference_urates), widths = "auto")
 # setColWidths(EARN_staterace_umemp, paste0(cur_qtr, ' BW HW ratios'), cols = 2:ncol(current_qtr_ratios_table), widths = "auto")
 # setColWidths(EARN_staterace_umemp, paste0(ref_qtr2,' BW HW ratios'), cols = 2:ncol(reference_qtr_ratios_table), widths = "auto")
 # setColWidths(EARN_staterace_umemp, paste0(cur_qtr,' vs ', ref_qtr2), cols = 2:ncol(change_since_previous_period), widths = "auto")
