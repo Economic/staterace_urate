@@ -15,6 +15,8 @@ library(openxlsx)
 library(data.table)
 library(zoo)
 library(lubridate)
+library(ggplot2)
+
 ```
 
 
@@ -32,8 +34,8 @@ rawsource <- "https://download.bls.gov/pub/time.series/la/"
 #max number of years is 20 per query, max seriesids is 50 per query, max queries per day is 500 for registered users.
 get_bls_data <- function(codes) {
   
-  payload1 <- list('seriesid' = codes[1:50], 'startyear' = '2006', 'endyear' = '2022', 'registrationkey' = bls_key)
-  payload2 <- list('seriesid' = codes[51:52], 'startyear' = '2006', 'endyear' = '2022', 'registrationkey' = bls_key)
+  payload1 <- list('seriesid' = codes[1:50], 'startyear' = '2006', 'endyear' = '2021', 'registrationkey' = bls_key)
+  payload2 <- list('seriesid' = codes[51:52], 'startyear' = '2006', 'endyear' = '2021', 'registrationkey' = bls_key)
 
   df1 <- blsAPI(payload1, api_version = 2, return_data_frame = TRUE)
   df2 <- blsAPI(payload2, api_version = 2, return_data_frame = TRUE)
@@ -70,7 +72,7 @@ laus <- get_bls_data(statedata) %>%
 
 ```{r Load CPS via EPI extractr}
 #Use EPI extractr to load CPS Basic. See more at https://github.com/Economic/epiextractr
-cps <-load_basic(2016:year(Sys.time()), year, month, basicwgt, age, female, wbhao, statefips, unemp, lfstat) %>% 
+cps <-load_basic(2012:2021, year, month, basicwgt, age, female, wbhao, statefips, division, unemp, lfstat) %>% 
   filter(age>=16, lfstat!=3) %>% 
   mutate(date = as.Date(paste(year, month, 1, sep = "-"), "%Y-%m-%d")) %>% 
   #create quarterly date periods
@@ -149,7 +151,7 @@ qtly_analysis <- function(quarters){
            se, cv, thresh.10:thresh.25) %>% # Clean our data up
       mutate(wbhao = replace_na(wbhao, 'All'),
              gender = replace_na(gender, 'All'),
-             grp_qtrs = paste(qtr_list[1],'+',qtr_list[i+1]),
+             grp_qtrs = paste(qtr_list[i],'+',qtr_list[i+1]),
              qtr = paste(qtr_list[i+1])) %>% 
     filter(wbhao!='Other')
   
@@ -161,16 +163,26 @@ qtly_analysis <- function(quarters){
 
 ```
 
-```{r Desired quarters}
+```{r Desired quarters, echo=FALSE}
 
-qtr_list <- c('2019 Q4','2020 Q1', '2020 Q2', '2020 Q3', '2020 Q4', '2021 Q1', '2021 Q2',
-              '2021 Q3', '2021 Q4')
+qtr_list <- c(unique(cps$qtr))
 
 my_dfs <- qtly_analysis(qtr_list)
 
 all_qtrs <- bind_rows(my_dfs)
 
 ```
+
+```{r}
+counts <- all_qtrs %>% 
+  filter(gender=='All', wbhao!='All') %>% 
+  group_by(wbhao) %>% 
+  summarize(thresh.10 = colSums(!is.na(thresh.10)))# %>% 
+  pivot_wider(id_cols = qtr, names_from = wbhao, values_from = thresh.10)
+  
+
+```
+
 
 
 ```{r Qtr analysis}
@@ -180,9 +192,28 @@ ref_qtr <- all_qtrs %>%
 
 state_urates <- all_qtrs %>% 
   filter(gender == 'All', wbhao!='All') %>% 
-  select(qtr, state, wbhao, qtr_st_urate_by_reg) %>% 
-  pivot_wider(id_cols = c(qtr,wbhao), names_from = c(state), values_from = qtr_st_urate_by_reg) %>% 
+  select(qtr, state, wbhao, qtr_st_urate_by_reg) %>%
+  arrange(wbhao) %>% 
+  pivot_wider(id_cols = c(qtr), names_from = c(state, wbhao), values_from = qtr_st_urate_by_reg) %>%
+  filter(qtr!='NA') %>% 
   write_csv(here(paste0('data/state_urates_',format(Sys.time(), "%d-%b-%Y %H.%M"),'.csv')))
+
+unsupressed_urate_count <- all_qtrs %>% 
+  filter(gender == 'All', wbhao!='All') %>% 
+  select(qtr, state, wbhao, thresh.10:thresh.25) %>%
+  pivot_longer(cols = c(thresh.10:thresh.25), names_to = "threshold", values_to = 'urates') %>% 
+  group_by(wbhao, threshold) %>% 
+  summarize(supressed = sum(!is.na(urates))) %>% 
+  pivot_wider(id_cols = c(wbhao), names_from = c(threshold), values_from = supressed)
+
+unsupressed_by_st <- all_qtrs %>% 
+  filter(gender == 'All', wbhao!='All') %>% 
+  select(qtr, state, wbhao, thresh.10:thresh.25) %>%
+  pivot_longer(cols = c(thresh.10:thresh.25), names_to = "threshold", values_to = 'urates') %>% 
+  group_by(wbhao, state, threshold) %>% 
+  summarize(supressed = sum(!is.na(urates))) %>% 
+  pivot_wider(id_cols = c(state), names_from = c(wbhao,threshold), values_from = supressed)
+
 
 ```
 
