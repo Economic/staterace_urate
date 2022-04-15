@@ -1,0 +1,10 @@
+div_label,Asian_thresh.10,Asian_thresh.15,Asian_thresh.20,Asian_thresh.25,Black_thresh.10,Black_thresh.15,Black_thresh.20,Black_thresh.25,Hispanic_thresh.10,Hispanic_thresh.15,Hispanic_thresh.20,Hispanic_thresh.25,White_thresh.10,White_thresh.15,White_thresh.20,White_thresh.25
+East North Central,2,34,39,39,39,39,39,39,38,39,39,39,39,39,39,39
+East South Central,0,0,2,14,39,39,39,39,1,24,38,39,39,39,39,39
+Middle Atlantic,26,38,39,39,39,39,39,39,39,39,39,39,39,39,39,39
+Mountain,12,35,39,39,25,39,39,39,39,39,39,39,39,39,39,39
+New England,6,22,36,38,23,39,39,39,36,39,39,39,39,39,39,39
+Pacific,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39
+South Atlantic,27,39,39,39,39,39,39,39,39,39,39,39,39,39,39,39
+West North Central,0,18,34,39,35,39,39,39,27,39,39,39,39,39,39,39
+West South Central,2,31,39,39,39,39,39,39,39,39,39,39,39,39,39,39
