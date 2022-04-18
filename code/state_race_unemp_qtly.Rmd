@@ -165,8 +165,19 @@ my_state_dfs <- state_analysis(qtr_list)
 all_qtrs <- bind_rows(my_state_dfs)
 ```
 
+```{r State unemployment levels}
 
-```{r Final tables}
+urates_wbhao_state <- all_qtrs %>% 
+  filter(gender=='All') %>% 
+  select(state, wbhao, qtr, thresh700) %>%
+  filter(qtr!='NA') %>% 
+  arrange(qtr) %>% 
+  pivot_wider(id_cols = c(state), names_from = c(wbhao,qtr), values_from = thresh700)
+
+```
+
+
+```{r BW and HW Ratios}
 
 all_ratios_wide <- all_qtrs %>%
   filter(gender=='All') %>% 
@@ -196,24 +207,15 @@ change_since_2020q1 <- all_qtrs %>%
   filter(gender=='All') %>% 
   select(state, wbhao, qtr, thresh700) %>% 
   pivot_wider(id_cols = c(state,wbhao), names_from = qtr, values_from = thresh700) %>% 
-  clean_names() %>% 
-  select(state, wbhao, x2020_q1:x2022_q1) %>% 
+  clean_names('all_caps') %>% 
+  select(STATE, WBHAO, X2020_Q1:X2022_Q1) %>% 
   #subtract all columns by 2020 Q1 column, mult by 100 to get change since 2020 Q1
-  mutate(across(x2020_q1:x2022_q1, .fns =  ~(.x - x2020_q1)*100)) %>% 
-  pivot_longer(!c(state, wbhao), names_to = 'qtr', values_to = 'change') %>% 
+  mutate(across(X2020_Q1:X2022_Q1, .fns =  ~(.x - X2020_Q1)*100)) %>% 
+  pivot_longer(!c(STATE, WBHAO), names_to = 'qtr', values_to = 'change') %>% 
   arrange(qtr) %>% 
-  pivot_wider(id_cols = c(state), names_from = c(wbhao,qtr), values_from = change)
-
-urates_wbhao_state <- all_qtrs %>% 
-  filter(gender=='All') %>% 
-  select(state, wbhao, qtr, thresh700) %>%
-  filter(qtr!='NA') %>% 
-  arrange(qtr) %>% 
-  pivot_wider(id_cols = c(state), names_from = c(wbhao,qtr), values_from = thresh700)
+  pivot_wider(id_cols = c(STATE), names_from = c(WBHAO,qtr), values_from = change)
 
 ```
-
-
 
 Supplemental data
 
@@ -300,7 +302,7 @@ addStyle(EARN_staterace_umemp, 'Ratios long', style=ppt2, cols=c(3,4), rows=2:(n
 
 
 #add pct format
-addStyle(EARN_staterace_umemp, 'State urates', style=pct, cols=c(2:121), rows=2:(nrow(current_urates)+1), gridExpand=TRUE)
+addStyle(EARN_staterace_umemp, 'State urates', style=pct, cols=c(2:121), rows=2:(nrow(urates_wbhao_state)+1), gridExpand=TRUE)
 
 addStyle(EARN_staterace_umemp, "LAUS Monthly", style=pct, cols=c(2:ncol(laus_monthly)), rows=2:(nrow(laus_monthly)+1), gridExpand=TRUE)
 addStyle(EARN_staterace_umemp, "LAUS Qtrly", style=pct, cols=c(2:ncol(laus_qtrly)), rows=2:(nrow(laus_qtrly)+1), gridExpand=TRUE)
@@ -320,7 +322,7 @@ setColWidths(EARN_staterace_umemp, "LAUS Qtrly", cols = 2:ncol(laus_qtrly), widt
 setColWidths(EARN_staterace_umemp, "CPS Qtrly", cols = 2:ncol(cps_qtrly), widths = "auto")
 setColWidths(EARN_staterace_umemp, "CPS Monthly", cols = 2:ncol(cps_monthly), widths = "auto")
 
-saveWorkbook(EARN_staterace_umemp, here(paste0('data/EARN_staterace_.xlsx')), overwrite = TRUE)
+saveWorkbook(EARN_staterace_umemp,here(paste0("data/EARN_qtrly_st_race_unemp_", format(Sys.time(), "%d-%b-%Y %H.%M"), ".xlsx")), overwrite = TRUE)
 ```
 
 
