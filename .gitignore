@@ -5,5 +5,5 @@
 .RData
 .Rproj.user
 .Rhistory
-/data/*.csv
+/output/*.csv
 
