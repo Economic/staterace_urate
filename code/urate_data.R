@@ -1,6 +1,5 @@
 
 #BLS API keys are available at https://www.bls.gov/developers/
-bls_key <- Sys.getenv("BLS_REG_KEY")
 series_ids <- fread(here('input/seriesid.csv'))
 statedata <- series_ids$series_id
 
