@@ -8,3 +8,4 @@
 /output/*.csv
 *.png
 /code/proto_scripts
+*.db
