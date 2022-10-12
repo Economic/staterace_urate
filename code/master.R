@@ -21,30 +21,35 @@ bls_key <- Sys.getenv("BLS_REG_KEY")
 
 #NOTE: The lower bound year for this script is 1989, due to the limited availability of the wbhao variable. 
 # See https://microdata.epi.org/variables/demographics/wbhao/.
-start_year=2012
+start_year=2018
 end_year=year(Sys.Date())
 
 #Load data files; LAUS, CPS, Geographic labels
 source("code/urate_data.R", echo = TRUE)
 
-#State analysis function
+#Function for estimating state level unemployment by race/ethnicity
 source("code/state_analysis.R", echo = TRUE)
 
-#Geographic division analysis function
+#Function for estimating division level unemployment by race/ethnicity
 source("code/division_analysis.R", echo = TRUE)
 
 #Primary output; includes:
 ## State/division unemployment rates, Black/Hispanic - White unemployment ratios, and change since 2020Q1
 source("code/primary_output.R", echo = TRUE)
 
-#supplemental data
+#supplemental data including:
+## unsuppressed urate counts by state/division, 
+## CPS quarterly/monthly unemployment rates
+## LAUS quarterly/monthly unemployment rates
+## State share of division unemployment
+## WBHAO share of state unemployment
 source("code/supplement_data.R", echo = TRUE)
 
-#Create state line charts
+#Create state unemployment by race/ethnicity line charts
 source("code/ggcharts.R", echo = TRUE)
 
 #Excel workbook export
-source("code/excel_expt.R", echo = TRUE)
+source("code/excel_export.R", echo = TRUE)
 
 
 
