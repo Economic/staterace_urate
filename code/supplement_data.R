@@ -1,52 +1,5 @@
 #Supplemental data
 
-#unsuppressed unemployment rate output by state
-
-state_urates <- all_qtrs %>% 
-  filter(gender == 'All', wbhao!='All') %>% 
-  select(qtr, state, wbhao, qtr_st_urate_by_reg) %>%
-  pivot_wider(id_cols = c(qtr), names_from = c(state, wbhao), values_from = qtr_st_urate_by_reg) %>%
-  filter(qtr!='NA')
-
-unsupressed_urate_count <- all_qtrs %>% 
-  filter(gender == 'All', wbhao!='All') %>% 
-  select(qtr, state, wbhao, thresh.15, thresh700) %>%
-  pivot_longer(cols = c(thresh.15, thresh700), names_to = "threshold", values_to = 'urates') %>% 
-  group_by(wbhao, threshold) %>% 
-  summarize(supressed = sum(!is.na(urates))) %>% 
-  pivot_wider(id_cols = c(wbhao), names_from = c(threshold), values_from = supressed)
-
-unsupressed_by_st <- all_qtrs %>% 
-  filter(gender == 'All', wbhao!='All') %>% 
-  select(qtr, state, wbhao, thresh.15, thresh700) %>%
-  pivot_longer(cols = c(thresh.15, thresh700), names_to = "threshold", values_to = 'urates') %>% 
-  group_by(wbhao, state, threshold) %>% 
-  summarize(supressed = sum(!is.na(urates))) %>% 
-  pivot_wider(id_cols = c(state), names_from = c(wbhao,threshold), values_from = supressed)
-
-#unsuppressed unemployment rate output by geographic division
-
-unsupressed_by_div <- all_qtrs_div %>% 
-  filter(gender == 'All', wbhao!='All', div_label!='US') %>% 
-  select(qtr, div_label, wbhao, thresh.15, thresh700) %>%
-  pivot_longer(cols = c(thresh.15, thresh700), names_to = "threshold", values_to = 'urates') %>% 
-  group_by(wbhao, div_label, threshold) %>% 
-  summarize(supressed = sum(!is.na(urates))) %>% 
-  pivot_wider(id_cols = c(div_label), names_from = c(wbhao,threshold), values_from = supressed)
-
-div_urates_all <- all_qtrs_div %>% 
-  filter(gender == 'All', wbhao!='All') %>% 
-  select(qtr, div_label, wbhao, qtr_div_urate_by_reg, thresh.15, thresh700) %>%
-  arrange(wbhao) %>% 
-  pivot_wider(id_cols = c(qtr), names_from = c(div_label, wbhao), values_from = qtr_div_urate_by_reg)
-
-div_urates_thresh15 <- all_qtrs_div %>% 
-  filter(gender == 'All', wbhao!='All') %>% 
-  select(qtr, div_label, wbhao, qtr_div_urate_by_reg, thresh.15, thresh700) %>%
-  arrange(wbhao) %>% 
-  pivot_wider(id_cols = c(qtr), names_from = c(div_label, wbhao), values_from = thresh.15)
-
-
 # df of LAUS monthly unemployment rates by state
 laus_monthly <- laus %>% 
   select(state, date, urate) %>%

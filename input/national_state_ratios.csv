@@ -1,0 +1,209 @@
+﻿div_label,state,wbhao,natl_weight,st_weight
+East South Central,Alabama,Asian,1,0
+Pacific,Alaska,Asian,0.6,0.4
+Mountain,Arizona,Asian,0.8,0.2
+West South Central,Arkansas,Asian,1,0
+Pacific,California,Asian,0,1
+Mountain,Colorado,Asian,1,0
+New England,Connecticut,Asian,1,0
+South Atlantic,Delaware,Asian,1,0
+South Atlantic,District of Columbia,Asian,1,0
+South Atlantic,Florida,Asian,0.7,0.3
+South Atlantic,Georgia,Asian,1,0
+Pacific,Hawaii,Asian,0,1
+Mountain,Idaho,Asian,1,0
+East North Central,Illinois,Asian,0.6,0.4
+East North Central,Indiana,Asian,1,0
+West North Central,Iowa,Asian,1,0
+West North Central,Kansas,Asian,1,0
+East South Central,Kentucky,Asian,1,0
+West South Central,Louisiana,Asian,1,0
+New England,Maine,Asian,1,0
+South Atlantic,Maryland,Asian,0.8,0.2
+New England,Massachusetts,Asian,0.2,0.8
+East North Central,Michigan,Asian,1,0
+West North Central,Minnesota,Asian,1,0
+East South Central,Mississippi,Asian,1,0
+West North Central,Missouri,Asian,1,0
+Mountain,Montana,Asian,1,0
+West North Central,Nebraska,Asian,1,0
+Mountain,Nevada,Asian,0.4,0.6
+New England,New Hampshire,Asian,1,0
+Middle Atlantic,New Jersey,Asian,0.2,0.8
+Mountain,New Mexico,Asian,1,0
+Middle Atlantic,New York,Asian,0,1
+South Atlantic,North Carolina,Asian,1,0
+West North Central,North Dakota,Asian,1,0
+East North Central,Ohio,Asian,1,0
+West South Central,Oklahoma,Asian,1,0
+Pacific,Oregon,Asian,0.8,0.2
+Middle Atlantic,Pennsylvania,Asian,1,0
+New England,Rhode Island,Asian,1,0
+South Atlantic,South Carolina,Asian,1,0
+West North Central,South Dakota,Asian,1,0
+East South Central,Tennessee,Asian,1,0
+West South Central,Texas,Asian,0.2,0.8
+Mountain,Utah,Asian,1,0
+New England,Vermont,Asian,1,0
+South Atlantic,Virginia,Asian,0.8,0.2
+Pacific,Washington,Asian,0.4,0.6
+South Atlantic,West Virginia,Asian,1,0
+East North Central,Wisconsin,Asian,1,0
+Mountain,Wyoming,Asian,1,0
+East South Central,Alabama,Black,0,1
+Pacific,Alaska,Black,1,0
+Mountain,Arizona,Black,0.7,0.3
+West South Central,Arkansas,Black,0.2,0.8
+Pacific,California,Black,0,1
+Mountain,Colorado,Black,0.8,0.2
+New England,Connecticut,Black,0.7,0.3
+South Atlantic,Delaware,Black,0,1
+South Atlantic,District of Columbia,Black,0,1
+South Atlantic,Florida,Black,0,1
+South Atlantic,Georgia,Black,0,1
+Pacific,Hawaii,Black,1,0
+Mountain,Idaho,Black,1,0
+East North Central,Illinois,Black,0,1
+East North Central,Indiana,Black,0.2,0.8
+West North Central,Iowa,Black,0.8,0.2
+West North Central,Kansas,Black,0.8,0.2
+East South Central,Kentucky,Black,0.4,0.6
+West South Central,Louisiana,Black,0,1
+New England,Maine,Black,1,0
+South Atlantic,Maryland,Black,0,1
+New England,Massachusetts,Black,0,1
+East North Central,Michigan,Black,0,1
+West North Central,Minnesota,Black,0.8,0.2
+East South Central,Mississippi,Black,0,1
+West North Central,Missouri,Black,0.2,0.8
+Mountain,Montana,Black,1,0
+West North Central,Nebraska,Black,1,0
+Mountain,Nevada,Black,0,1
+New England,New Hampshire,Black,1,0
+Middle Atlantic,New Jersey,Black,0,1
+Mountain,New Mexico,Black,0.8,0.2
+Middle Atlantic,New York,Black,0,1
+South Atlantic,North Carolina,Black,0,1
+West North Central,North Dakota,Black,0.8,0.2
+East North Central,Ohio,Black,0,1
+West South Central,Oklahoma,Black,0.7,0.3
+Pacific,Oregon,Black,1,0
+Middle Atlantic,Pennsylvania,Black,0,1
+New England,Rhode Island,Black,1,0
+South Atlantic,South Carolina,Black,0,1
+West North Central,South Dakota,Black,1,0
+East South Central,Tennessee,Black,0,1
+West South Central,Texas,Black,0,1
+Mountain,Utah,Black,1,0
+New England,Vermont,Black,1,0
+South Atlantic,Virginia,Black,0,1
+Pacific,Washington,Black,0.8,0.2
+South Atlantic,West Virginia,Black,0.7,0.3
+East North Central,Wisconsin,Black,0.7,0.3
+Mountain,Wyoming,Black,1,0
+East South Central,Alabama,Hispanic,1,0
+Pacific,Alaska,Hispanic,0.8,0.2
+Mountain,Arizona,Hispanic,0,1
+West South Central,Arkansas,Hispanic,0.8,0.2
+Pacific,California,Hispanic,0,1
+Mountain,Colorado,Hispanic,0,1
+New England,Connecticut,Hispanic,0.2,0.8
+South Atlantic,Delaware,Hispanic,0.8,0.2
+South Atlantic,District of Columbia,Hispanic,0.2,0.8
+South Atlantic,Florida,Hispanic,0,1
+South Atlantic,Georgia,Hispanic,0.7,0.3
+Pacific,Hawaii,Hispanic,0.7,0.3
+Mountain,Idaho,Hispanic,0.4,0.6
+East North Central,Illinois,Hispanic,0,1
+East North Central,Indiana,Hispanic,0.8,0.2
+West North Central,Iowa,Hispanic,0.8,0.2
+West North Central,Kansas,Hispanic,0.7,0.3
+East South Central,Kentucky,Hispanic,1,0
+West South Central,Louisiana,Hispanic,0.6,0.4
+New England,Maine,Hispanic,1,0
+South Atlantic,Maryland,Hispanic,0.7,0.3
+New England,Massachusetts,Hispanic,0,1
+East North Central,Michigan,Hispanic,0.6,0.4
+West North Central,Minnesota,Hispanic,1,0
+East South Central,Mississippi,Hispanic,1,0
+West North Central,Missouri,Hispanic,1,0
+Mountain,Montana,Hispanic,1,0
+West North Central,Nebraska,Hispanic,0.7,0.3
+Mountain,Nevada,Hispanic,0,1
+New England,New Hampshire,Hispanic,1,0
+Middle Atlantic,New Jersey,Hispanic,0,1
+Mountain,New Mexico,Hispanic,0,1
+Middle Atlantic,New York,Hispanic,0,1
+South Atlantic,North Carolina,Hispanic,0,1
+West North Central,North Dakota,Hispanic,1,0
+East North Central,Ohio,Hispanic,0.7,0.3
+West South Central,Oklahoma,Hispanic,0.6,0.4
+Pacific,Oregon,Hispanic,0.2,0.8
+Middle Atlantic,Pennsylvania,Hispanic,0,1
+New England,Rhode Island,Hispanic,0.4,0.6
+South Atlantic,South Carolina,Hispanic,1,0
+West North Central,South Dakota,Hispanic,1,0
+East South Central,Tennessee,Hispanic,0.7,0.3
+West South Central,Texas,Hispanic,0,1
+Mountain,Utah,Hispanic,0.6,0.4
+New England,Vermont,Hispanic,1,0
+South Atlantic,Virginia,Hispanic,0.6,0.4
+Pacific,Washington,Hispanic,0,1
+South Atlantic,West Virginia,Hispanic,1,0
+East North Central,Wisconsin,Hispanic,0.8,0.2
+Mountain,Wyoming,Hispanic,0.4,0.6
+East South Central,Alabama,White,0,1
+Pacific,Alaska,White,0,1
+Mountain,Arizona,White,0,1
+West South Central,Arkansas,White,0,1
+Pacific,California,White,0,1
+Mountain,Colorado,White,0,1
+New England,Connecticut,White,0,1
+South Atlantic,Delaware,White,0,1
+South Atlantic,District of Columbia,White,0,1
+South Atlantic,Florida,White,0,1
+South Atlantic,Georgia,White,0,1
+Pacific,Hawaii,White,0,1
+Mountain,Idaho,White,0,1
+East North Central,Illinois,White,0,1
+East North Central,Indiana,White,0,1
+West North Central,Iowa,White,0,1
+West North Central,Kansas,White,0,1
+East South Central,Kentucky,White,0,1
+West South Central,Louisiana,White,0,1
+New England,Maine,White,0,1
+South Atlantic,Maryland,White,0,1
+New England,Massachusetts,White,0,1
+East North Central,Michigan,White,0,1
+West North Central,Minnesota,White,0,1
+East South Central,Mississippi,White,0,1
+West North Central,Missouri,White,0,1
+Mountain,Montana,White,0,1
+West North Central,Nebraska,White,0,1
+Mountain,Nevada,White,0,1
+New England,New Hampshire,White,0,1
+Middle Atlantic,New Jersey,White,0,1
+Mountain,New Mexico,White,0,1
+Middle Atlantic,New York,White,0,1
+South Atlantic,North Carolina,White,0,1
+West North Central,North Dakota,White,0,1
+East North Central,Ohio,White,0,1
+West South Central,Oklahoma,White,0,1
+Pacific,Oregon,White,0,1
+Middle Atlantic,Pennsylvania,White,0,1
+New England,Rhode Island,White,0,1
+South Atlantic,South Carolina,White,0,1
+West North Central,South Dakota,White,0,1
+East South Central,Tennessee,White,0,1
+West South Central,Texas,White,0,1
+Mountain,Utah,White,0,1
+New England,Vermont,White,0,1
+South Atlantic,Virginia,White,0,1
+Pacific,Washington,White,0,1
+South Atlantic,West Virginia,White,0,1
+East North Central,Wisconsin,White,0,1
+Mountain,Wyoming,White,0,1
+US,United States,White,1,0
+US,United States,Black,1,0
+US,United States,Hispanic,1,0
+US,United States,Asian,1,0

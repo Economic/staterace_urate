@@ -26,8 +26,12 @@ get_bls_data <- function(codes) {
 }
 
 
-#Optional -- load state labels
+#load state labels
 geographic_labels<- read_csv(here('input/geographic_labels.csv'), col_names = TRUE)
+
+#Load national-state demographic group ratios. See technical appendix for more details
+national_state_ratios <-read_csv(here('input/national_state_ratios.csv'))
+
 
 #Use EPI extractr to load CPS Basic. See more about package at https://github.com/Economic/epiextractr
 cps <-load_basic(start_year:end_year, year, month, basicwgt, age, female, wbhao, statefips, division, unemp, lfstat) %>% 

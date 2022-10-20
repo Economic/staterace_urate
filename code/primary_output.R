@@ -1,62 +1,62 @@
-#Primary output
 
-## Suppress state urates by CV threshold of .15
-urates_wbhao_state_cv.15 <- all_qtrs %>% 
-  filter(gender=='All') %>% 
-  select(state, wbhao, qtr, thresh.15) %>%
-  arrange(wbhao, desc(qtr)) %>% 
-  pivot_wider(id_cols = c(qtr, wbhao), names_from = c(state), values_from = thresh.15)
+#call quarterly state function passing all quarters as arguments
+my_state_dfs <- state_analysis(qtr_list)
 
-urates_wbhao_division_cv.15 <- all_qtrs_div %>% 
-  filter(gender=='All') %>% 
-  select(div_label, wbhao, qtr, thresh.15) %>%
-  arrange(wbhao, desc(qtr)) %>% 
-  pivot_wider(id_cols = c(qtr, wbhao), names_from = c(div_label), values_from = thresh.15)
+#bind each data frame returned from function
+all_qtrs <- bind_rows(my_state_dfs) %>% 
+  mutate(wbhao = replace_na(wbhao, 'All'),
+         gender = replace_na(gender, 'All'))
 
-## Suppress state urates by a sample size threshold of 700
-urates_wbhao_state_n700 <- all_qtrs %>% 
-  filter(gender=='All') %>% 
-  select(state, wbhao, qtr, thresh700) %>%
-  arrange(wbhao, desc(qtr)) %>% 
-  pivot_wider(id_cols = c(qtr, wbhao), names_from = c(state), values_from = thresh700)
+# Clean our data up
+state_unemp_rates_raw <- all_qtrs %>% 
+  filter(gender=='All', wbhao!="All", wbhao!='Other', qtr!='NA') %>% 
+  left_join(geographic_labels) %>% 
+  left_join(national_state_ratios) %>% 
+  select(qtr, div_label, state, st_abbr, gender, wbhao, n, subgroup_urate,
+         st_urate_12mos, natl_urate_12mos, st_ratio, natl_ratio, st_weight, natl_weight, laus_qtr_unemp, cps_pool = grp_qtrs) %>% 
+  #Calculates a final quarterly unemployment rate by multiplying a weighted mean
+  #of state and national CPS ratios with LAUS quarterly state unemployment rates. See technical appendix for detail
+  mutate(final_urate = laus_qtr_unemp*((st_ratio*st_weight)+(natl_ratio*natl_weight)))
 
-urates_wbhao_division_n700 <- all_qtrs_div %>% 
-  filter(gender=='All') %>% 
-  select(div_label, wbhao, qtr, thresh700) %>%
-  arrange(wbhao, desc(qtr)) %>% 
-  pivot_wider(id_cols = c(qtr, wbhao), names_from = c(div_label), values_from = thresh700)
 
+# Create a table of state unemployment rates by quarter
+state_unemp_rates_final <- state_unemp_rates_raw %>% 
+  select(qtr, state, wbhao, final_urate) %>% 
+  pivot_wider(id_cols = c(qtr, state), names_from=wbhao, values_from = final_urate) %>% 
+  arrange(desc(qtr))
 
 # Black/Hispanic:White unemployment ratios
-all_ratios_wide <- all_qtrs %>%
+all_ratios_wide <- state_unemp_rates_raw %>%
   filter(gender=='All') %>% 
-  select(wbhao, thresh.15, state, qtr) %>% 
-  pivot_wider(names_from=c(wbhao), values_from = thresh.15) %>% 
+  select(wbhao, final_urate, state, qtr) %>% 
+  pivot_wider(names_from=c(wbhao), values_from = final_urate) %>% 
   mutate(bw.ratio = Black/White,
          hw.ratio = Hispanic/White) %>% 
   select(state, qtr, bw.ratio, hw.ratio) %>% 
   pivot_wider(id_cols = c(state), names_from = c(qtr), values_from = c(bw.ratio, hw.ratio))
 
 # Alternative long output for BH:W ratios
-all_ratios_long <- all_qtrs %>%
+all_ratios_long <- state_unemp_rates_raw %>%
   filter(gender=='All') %>% 
-  select(wbhao, thresh.15, state, qtr) %>% 
-  pivot_wider(names_from=c(wbhao), values_from = thresh.15) %>% 
+  select(wbhao, final_urate, state, qtr) %>% 
+  pivot_wider(names_from=c(wbhao), values_from = final_urate) %>% 
   mutate(bw.ratio = Black/White,
          hw.ratio = Hispanic/White) %>% 
   select(state, qtr, bw.ratio, hw.ratio) %>% 
   arrange(desc(qtr))
 
+#Create dataframe of 2021 Q1 data (pre-pandemic) for comparison
+q1_2020 <- state_unemp_rates_raw %>% 
+  filter(qtr=='2020 Q1') %>% 
+  select(state, wbhao, final_urate) %>% 
+  rename(urate_2020q1 = final_urate)
 
 #this compares all quarters [2020 Q1 - present] of state unemployment rates relative to 2020 Q1
-change_since_2020q1 <- all_qtrs %>% 
+change_since_2020q1 <- state_unemp_rates_raw %>% 
   filter(gender=='All') %>% 
-  select(state, wbhao, qtr, thresh.15) %>% 
-  pivot_wider(id_cols = c(state,wbhao), names_from = qtr, values_from = thresh.15) %>% 
-  clean_names('all_caps') %>% 
-  select(STATE, WBHAO, X2020_Q1:X2022_Q1) %>% 
-  #subtract all columns by 2020 Q1 column, mult by 100 to get change since 2020 Q1
-  mutate(across(X2020_Q1:X2022_Q1, .fns =  ~(.x - X2020_Q1)*100)) %>% 
-  pivot_longer(!c(STATE, WBHAO), names_to = 'qtr', values_to = 'change') %>% 
-  arrange(qtr) %>% 
-  pivot_wider(id_cols = c(STATE), names_from = c(WBHAO,qtr), values_from = change)
+  select(state, wbhao, qtr, final_urate) %>%
+  left_join(q1_2020) %>%
+  arrange(desc(qtr)) %>% 
+  mutate(across(final_urate|urate_2020q1, ~.x*100),
+         change_since_2020q1 = ifelse(!is.na(final_urate) & !is.na(urate_2020q1), yes=final_urate-urate_2020q1, no=NA)) %>% 
+  pivot_wider(id_cols = c(qtr, state), names_from = wbhao, values_from = change_since_2020q1)

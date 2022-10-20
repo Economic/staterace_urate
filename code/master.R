@@ -1,4 +1,4 @@
-#Master file for Quarterly state/division unemployment by race/ethnicity, and gender
+#Master file for quarterly state/division unemployment by race/ethnicity, and gender
 #Author: Daniel Perez, 8/29/2022
 
 #libraries
@@ -27,14 +27,13 @@ end_year=year(Sys.Date())
 #Load data files; LAUS, CPS, Geographic labels
 source("code/urate_data.R", echo = TRUE)
 
+# Formula we need is LAUS * (subgroupUSA * national ratio)+(subgroupState * state ratio)
+
 #Function for estimating state level unemployment by race/ethnicity
 source("code/state_analysis.R", echo = TRUE)
 
-#Function for estimating division level unemployment by race/ethnicity
-source("code/division_analysis.R", echo = TRUE)
-
 #Primary output; includes:
-## State/division unemployment rates, Black/Hispanic - White unemployment ratios, and change since 2020Q1
+## State unemployment rates, Black/Hispanic - White unemployment ratios, and change since 2020Q1
 source("code/primary_output.R", echo = TRUE)
 
 #supplemental data including:
