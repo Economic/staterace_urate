@@ -9,15 +9,16 @@ all_qtrs <- bind_rows(my_state_dfs) %>%
 
 # Clean our data up
 state_unemp_rates_raw <- all_qtrs %>% 
-  filter(gender=='All', wbhao!="All", wbhao!='Other', qtr!='NA') %>% 
+  filter(gender=='All', wbhao!='Other', qtr!='NA') %>% 
   left_join(geographic_labels) %>% 
   left_join(national_state_ratios) %>% 
   select(qtr, div_label, state, st_abbr, gender, wbhao, n, subgroup_urate,
          st_urate_12mos, natl_urate_12mos, st_ratio, natl_ratio, st_weight, natl_weight, laus_qtr_unemp, cps_pool = grp_qtrs) %>% 
   #Calculates a final quarterly unemployment rate by multiplying a weighted mean
   #of state and national CPS ratios with LAUS quarterly state unemployment rates. See technical appendix for detail
-  mutate(final_urate = laus_qtr_unemp*((st_ratio*st_weight)+(natl_ratio*natl_weight)))
-
+  mutate(final_urate = laus_qtr_unemp*((st_ratio*st_weight)+(natl_ratio*natl_weight))) %>% 
+  #flag all unemployment rates that use national ratio weight greater than .7. Ignore US since it is spuriously true that it uses a 100% national weight.
+  mutate(asterisk_urate = ifelse(natl_weight>=.7 & state!="United States", yes=paste0(formatC(round(final_urate*100, digits = 1),1,format='f'),"%*"), no=paste0(formatC(round(final_urate*100, digits=1),1,format='f'),"%")))
 
 # Create a table of state unemployment rates by quarter
 state_unemp_rates_final <- state_unemp_rates_raw %>% 
@@ -28,7 +29,7 @@ state_unemp_rates_final <- state_unemp_rates_raw %>%
 # Black/Hispanic:White unemployment ratios
 all_ratios_wide <- state_unemp_rates_raw %>%
   filter(gender=='All') %>% 
-  select(wbhao, final_urate, state, qtr) %>% 
+  select(wbhao, final_urate, natl_weight, state, qtr) %>% 
   pivot_wider(names_from=c(wbhao), values_from = final_urate) %>% 
   mutate(bw.ratio = Black/White,
          hw.ratio = Hispanic/White) %>% 
@@ -60,3 +61,5 @@ change_since_2020q1 <- state_unemp_rates_raw %>%
   mutate(across(final_urate|urate_2020q1, ~.x*100),
          change_since_2020q1 = ifelse(!is.na(final_urate) & !is.na(urate_2020q1), yes=final_urate-urate_2020q1, no=NA)) %>% 
   pivot_wider(id_cols = c(qtr, state), names_from = wbhao, values_from = change_since_2020q1)
+
+

@@ -203,7 +203,59 @@ Pacific,Washington,White,0,1
 South Atlantic,West Virginia,White,0,1
 East North Central,Wisconsin,White,0,1
 Mountain,Wyoming,White,0,1
+US,United States,All,1,0
 US,United States,White,1,0
 US,United States,Black,1,0
 US,United States,Hispanic,1,0
 US,United States,Asian,1,0
+East South Central,Alabama,All,0,1
+Pacific,Alaska,All,0,1
+Mountain,Arizona,All,0,1
+West South Central,Arkansas,All,0,1
+Pacific,California,All,0,1
+Mountain,Colorado,All,0,1
+New England,Connecticut,All,0,1
+South Atlantic,Delaware,All,0,1
+South Atlantic,District of Columbia,All,0,1
+South Atlantic,Florida,All,0,1
+South Atlantic,Georgia,All,0,1
+Pacific,Hawaii,All,0,1
+Mountain,Idaho,All,0,1
+East North Central,Illinois,All,0,1
+East North Central,Indiana,All,0,1
+West North Central,Iowa,All,0,1
+West North Central,Kansas,All,0,1
+East South Central,Kentucky,All,0,1
+West South Central,Louisiana,All,0,1
+New England,Maine,All,0,1
+South Atlantic,Maryland,All,0,1
+New England,Massachusetts,All,0,1
+East North Central,Michigan,All,0,1
+West North Central,Minnesota,All,0,1
+East South Central,Mississippi,All,0,1
+West North Central,Missouri,All,0,1
+Mountain,Montana,All,0,1
+West North Central,Nebraska,All,0,1
+Mountain,Nevada,All,0,1
+New England,New Hampshire,All,0,1
+Middle Atlantic,New Jersey,All,0,1
+Mountain,New Mexico,All,0,1
+Middle Atlantic,New York,All,0,1
+South Atlantic,North Carolina,All,0,1
+West North Central,North Dakota,All,0,1
+East North Central,Ohio,All,0,1
+West South Central,Oklahoma,All,0,1
+Pacific,Oregon,All,0,1
+Middle Atlantic,Pennsylvania,All,0,1
+New England,Rhode Island,All,0,1
+South Atlantic,South Carolina,All,0,1
+West North Central,South Dakota,All,0,1
+East South Central,Tennessee,All,0,1
+West South Central,Texas,All,0,1
+Mountain,Utah,All,0,1
+New England,Vermont,All,0,1
+South Atlantic,Virginia,All,0,1
+Pacific,Washington,All,0,1
+South Atlantic,West Virginia,All,0,1
+East North Central,Wisconsin,All,0,1
+Mountain,Wyoming,All,0,1

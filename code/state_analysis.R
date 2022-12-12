@@ -36,7 +36,7 @@ state_analysis <- function(quarters){
              st_ratio = ifelse(subgroup_urate==0, yes=0, no=subgroup_urate/st_urate_12mos))
                
     us_urate <- us_subgroup_urates %>% 
-      filter(gender=='All', wbhao!="All", st_abbr=='US') %>%
+      filter(gender=='All', st_abbr=='US') %>%
       rename(natl_urate_12mos = st_urate_12mos,
              natl_ratio = st_ratio) %>% 
       select(wbhao, gender, natl_urate_12mos, natl_ratio)
@@ -45,7 +45,7 @@ state_analysis <- function(quarters){
     print(paste("Calculating subgroup urates for: ", qtr_list[i+3]))
     
     #Calculate all subgroup unemployment rates, then merge above chunks
-    all_subgroup_urates<- cps %>% 
+    all_subgroup_urates <- cps %>% 
       #restrict data to last 12 months
       filter(qtr==qtr_list[i] | qtr == qtr_list[i+1] | qtr == qtr_list[i+2] | qtr == qtr_list[i+3]) %>% 
       #create subgroup variables
@@ -58,6 +58,8 @@ state_analysis <- function(quarters){
                        n=n()) %>% 
       #split group_value variable to create st_abbr, wbho, gender labels
       separate(group_value, c('st_abbr','wbhao','gender')) %>% 
+      mutate(wbhao = replace_na(wbhao, 'All'),
+             gender = replace_na(gender, 'All')) %>% 
       #merge statefips labels by st_abbr to get fips codes and CPS estimated urates
       left_join(state_urates) %>% 
       arrange(st_abbr, desc(n)) %>% 

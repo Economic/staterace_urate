@@ -37,15 +37,17 @@ source("code/state_analysis.R", echo = TRUE)
 source("code/primary_output.R", echo = TRUE)
 
 #supplemental data including:
-## unsuppressed urate counts by state/division, 
+## unsuppressed unemployment rate counts by state/division, 
 ## CPS quarterly/monthly unemployment rates
 ## LAUS quarterly/monthly unemployment rates
 ## State share of division unemployment
 ## WBHAO share of state unemployment
 source("code/supplement_data.R", echo = TRUE)
 
-#Create state unemployment by race/ethnicity line charts
+#Create state unemployment by race/ethnicity line charts for technical appendix
 source("code/ggcharts.R", echo = TRUE)
+
+source("code/wordpress_figures.R", echo = TRUE)
 
 #Excel workbook export
 source("code/excel_export.R", echo = TRUE)

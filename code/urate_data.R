@@ -32,6 +32,10 @@ geographic_labels<- read_csv(here('input/geographic_labels.csv'), col_names = TR
 #Load national-state demographic group ratios. See technical appendix for more details
 national_state_ratios <-read_csv(here('input/national_state_ratios.csv'))
 
+#Create a wide form of national_state_ratios table, for formatting post-analysis (see primary_output.R)
+natl_st_ratio_table <-national_state_ratios %>% 
+  pivot_wider(id_cols = c(state), names_from = wbhao, values_from = natl_weight,names_prefix = "natl_wgt_") %>% 
+  clean_names("snake")
 
 #Use EPI extractr to load CPS Basic. See more about package at https://github.com/Economic/epiextractr
 cps <-load_basic(start_year:end_year, year, month, basicwgt, age, female, wbhao, statefips, division, unemp, lfstat) %>% 

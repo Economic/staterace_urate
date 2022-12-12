@@ -11,6 +11,8 @@ currency = createStyle(numFmt = '$#,#0')
 hs1 <- createStyle(fgFill = "#bfbfbf", halign = "CENTER", textDecoration = "Bold",
                    border = "Bottom", fontColour = "black")
 
+#Primary workbook
+
 EARN_staterace_umemp <- createWorkbook()
 
 addWorksheet(EARN_staterace_umemp, sheetName = 'State urates')
@@ -48,7 +50,6 @@ addStyle(EARN_staterace_umemp, "CPS Qtrly", style=pct, cols=c(2:ncol(cps_monthly
 #set column widths
 setColWidths(EARN_staterace_umemp, 'State urates', cols = 2:ncol(state_unemp_rates_final), widths = "auto")
 
-
 setColWidths(EARN_staterace_umemp, 'Change since 2020 Q1', cols = 2:ncol(change_since_2020q1), widths = "auto")
 setColWidths(EARN_staterace_umemp, 'Ratios long', cols = 2:ncol(all_ratios_long), widths = "auto")
 setColWidths(EARN_staterace_umemp, 'Ratios wide', cols = 2:ncol(all_ratios_wide), widths = "auto")
@@ -59,4 +60,26 @@ setColWidths(EARN_staterace_umemp, "CPS Qtrly", cols = 2:ncol(cps_qtrly), widths
 setColWidths(EARN_staterace_umemp, "CPS Monthly", cols = 2:ncol(cps_monthly), widths = "auto")
 
 #export workbook
-saveWorkbook(EARN_staterace_umemp,here(paste0("output/EARN_qtrly_st_race_unemp", format(Sys.time(), "%d-%b-%Y %H.%M"), ".xlsx")), overwrite = TRUE)
+saveWorkbook(EARN_staterace_umemp,here(paste0("output/EARN_qtrly_st_race_unemp.xlsx")), overwrite = TRUE)
+
+
+#WordPress Figures Workbook
+
+wp_figures <- createWorkbook()
+
+addWorksheet(wp_figures, sheetName = 'State urates ast')
+addWorksheet(wp_figures, sheetName = 'Change since 2020 Q1 ast')
+addWorksheet(wp_figures, sheetName = 'Ratios long ast')
+
+writeData(wp_figures, headerStyle = hs1, state_unemp_rates_asterisk, sheet = 'State urates ast', startCol = 1, startRow = 1, colNames = TRUE)
+writeData(wp_figures, headerStyle = hs1, change_2020q1_asterisk, sheet = 'Change since 2020 Q1 ast', startCol = 1, startRow = 1, colNames = TRUE)
+writeData(wp_figures, headerStyle = hs1, ratio_asterisk, sheet = 'Ratios long ast', startCol = 1, startRow = 1, colNames = TRUE)
+
+#Set column widths
+setColWidths(wp_figures, 'State urates ast', cols = 2:ncol(state_unemp_rates_asterisk), widths = "auto")
+setColWidths(wp_figures, 'Change since 2020 Q1 ast', cols = 2:ncol(change_2020q1_asterisk), widths = "auto")
+setColWidths(wp_figures, 'Ratios long ast', cols = 2:ncol(ratio_asterisk), widths = "auto")
+
+saveWorkbook(wp_figures,here(paste0("output/wp_figures.xlsx")), overwrite = TRUE)
+
+
