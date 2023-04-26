@@ -12,8 +12,12 @@ get_bls_data <- function(codes) {
   
   payload1 <- list('seriesid' = codes[1:50], 'startyear' = '1983', 'endyear' = '2002', 'registrationkey' = bls_key)
   payload2 <- list('seriesid' = codes[1:50], 'startyear' = '2003', 'endyear' = '2022', 'registrationkey' = bls_key)
+  payload2 <- list('seriesid' = codes[1:50], 'startyear' = '2023', 'endyear' = end_year, 'registrationkey' = bls_key)
+  
   payload3 <- list('seriesid' = codes[51:52], 'startyear' = '1983', 'endyear' = '2002', 'registrationkey' = bls_key)
   payload4 <- list('seriesid' = codes[51:52], 'startyear' = '2003', 'endyear' = '2022', 'registrationkey' = bls_key)
+  payload4 <- list('seriesid' = codes[51:52], 'startyear' = '2023', 'endyear' = end_year, 'registrationkey' = bls_key)
+  
   
   
   df1 <- blsAPI(payload1, api_version = 2, return_data_frame = TRUE)
