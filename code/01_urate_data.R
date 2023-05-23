@@ -11,22 +11,25 @@ rawsource <- "https://download.bls.gov/pub/time.series/la/"
 get_bls_data <- function(codes) {
   
   payload1 <- list('seriesid' = codes[1:50], 'startyear' = '1983', 'endyear' = '2002', 'registrationkey' = bls_key)
-  payload2 <- list('seriesid' = codes[1:50], 'startyear' = '2003', 'endyear' = '2022', 'registrationkey' = bls_key)
-  payload2 <- list('seriesid' = codes[1:50], 'startyear' = '2023', 'endyear' = end_year, 'registrationkey' = bls_key)
+  payload2 <- list('seriesid' = codes[51:52], 'startyear' = '1983', 'endyear' = '2002', 'registrationkey' = bls_key)
   
-  payload3 <- list('seriesid' = codes[51:52], 'startyear' = '1983', 'endyear' = '2002', 'registrationkey' = bls_key)
+  payload3 <- list('seriesid' = codes[1:50], 'startyear' = '2003', 'endyear' = '2022', 'registrationkey' = bls_key)
   payload4 <- list('seriesid' = codes[51:52], 'startyear' = '2003', 'endyear' = '2022', 'registrationkey' = bls_key)
-  payload4 <- list('seriesid' = codes[51:52], 'startyear' = '2023', 'endyear' = end_year, 'registrationkey' = bls_key)
   
+  payload5 <- list('seriesid' = codes[1:50], 'startyear' = '2022', 'endyear' = end_year, 'registrationkey' = bls_key)
+  payload6 <- list('seriesid' = codes[51:52], 'startyear' = '2022', 'endyear' = end_year, 'registrationkey' = bls_key)
   
   
   df1 <- blsAPI(payload1, api_version = 2, return_data_frame = TRUE)
   df2 <- blsAPI(payload2, api_version = 2, return_data_frame = TRUE)
   df3 <- blsAPI(payload3, api_version = 2, return_data_frame = TRUE)
   df4 <- blsAPI(payload4, api_version = 2, return_data_frame = TRUE)
+  df5 <- blsAPI(payload5, api_version = 2, return_data_frame = TRUE)
+  df6 <- blsAPI(payload6, api_version = 2, return_data_frame = TRUE)
+  
   
   #comine all years of data
-  rbind(df1, df2, df3, df4)
+  rbind(df1, df2, df3, df4, df5, df6)
 }
 
 
